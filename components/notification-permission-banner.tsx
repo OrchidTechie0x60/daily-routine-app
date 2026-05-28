@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Bell, X } from "lucide-react"
 import { getNotificationPermission, requestNotificationPermission } from "@/lib/notifications"
@@ -10,20 +10,15 @@ interface NotificationPermissionBannerProps {
 }
 
 export function NotificationPermissionBanner({ onPermissionGranted }: NotificationPermissionBannerProps) {
-  const [permission, setPermission] = useState<"granted" | "denied" | "default">("default")
-  const [dismissed, setDismissed] = useState(false)
+  // Initialize synchronously from localStorage so the banner never flashes
+  // on subsequent opens when permission was already granted/denied.
+  const [permission, setPermission] = useState<"granted" | "denied" | "default">(
+    () => getNotificationPermission()
+  )
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem("notification-banner-dismissed") === "true"
+  )
   const [requesting, setRequesting] = useState(false)
-
-  useEffect(() => {
-    const currentPermission = getNotificationPermission()
-    setPermission(currentPermission)
-
-    // Check if previously dismissed
-    const wasDismissed = localStorage.getItem("notification-banner-dismissed")
-    if (wasDismissed === "true") {
-      setDismissed(true)
-    }
-  }, [])
 
   const handleRequestPermission = async () => {
     setRequesting(true)
@@ -32,6 +27,8 @@ export function NotificationPermissionBanner({ onPermissionGranted }: Notificati
     setRequesting(false)
 
     if (result === "granted") {
+      // Persist so the banner never re-appears after granting
+      localStorage.setItem("notification-banner-dismissed", "true")
       setDismissed(true)
       onPermissionGranted?.()
     }

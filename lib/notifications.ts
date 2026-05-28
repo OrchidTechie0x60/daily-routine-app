@@ -33,14 +33,35 @@ function createDateFromTime(time: string): Date {
 
 export type NotificationPermissionStatus = "granted" | "denied" | "default"
 
-// --- Native permission cache ---
-// Capacitor permission checks are async; cache the result so synchronous
-// callers (getNotificationPermission) can read it instantly after init.
+// --- Native permission persistence ---
+// Capacitor permission checks are async; we persist the result in localStorage
+// so getNotificationPermission() returns the correct value synchronously on
+// every app launch without waiting for the async bridge call.
+const NATIVE_PERM_KEY = "native-notification-permission"
 let _nativePermissionCache: NotificationPermissionStatus = "default"
 
+function _readPersistedPermission(): NotificationPermissionStatus {
+  try {
+    const v = localStorage.getItem(NATIVE_PERM_KEY)
+    if (v === "granted" || v === "denied") return v
+  } catch {}
+  return "default"
+}
+
+function _persistPermission(status: NotificationPermissionStatus): void {
+  _nativePermissionCache = status
+  try {
+    if (status === "granted" || status === "denied") {
+      localStorage.setItem(NATIVE_PERM_KEY, status)
+    } else {
+      localStorage.removeItem(NATIVE_PERM_KEY)
+    }
+  } catch {}
+}
+
 /**
- * Must be called once on app startup on native to prime the permission cache
- * and create the Android notification channel.
+ * Must be called once on app startup on native to verify the OS permission
+ * state and create the Android notification channel.
  */
 export async function initNativePermissions(): Promise<void> {
   if (!isNative()) return
@@ -56,9 +77,10 @@ export async function initNativePermissions(): Promise<void> {
       lights: true,
     })
     const result = await LocalNotifications.checkPermissions()
-    _nativePermissionCache =
+    const status: NotificationPermissionStatus =
       result.display === "granted" ? "granted" :
       result.display === "denied"  ? "denied"  : "default"
+    _persistPermission(status)
   } catch (e) {
     console.error("[Notifications] Native init error:", e)
   }
@@ -71,8 +93,9 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
     try {
       const { LocalNotifications } = await import("@capacitor/local-notifications")
       const result = await LocalNotifications.requestPermissions()
-      _nativePermissionCache = result.display === "granted" ? "granted" : "denied"
-      return _nativePermissionCache
+      const status: NotificationPermissionStatus = result.display === "granted" ? "granted" : "denied"
+      _persistPermission(status)
+      return status
     } catch (e) {
       console.error("[Notifications] Native permission request error:", e)
       return "denied"
@@ -90,7 +113,13 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 }
 
 export function getNotificationPermission(): NotificationPermissionStatus {
-  if (isNative()) return _nativePermissionCache
+  if (isNative()) {
+    // localStorage is available synchronously on first render; the async
+    // initNativePermissions() writes here so subsequent launches are instant.
+    return _readPersistedPermission() !== "default"
+      ? _readPersistedPermission()
+      : _nativePermissionCache
+  }
   if (!("Notification" in window)) return "denied"
   return Notification.permission
 }
