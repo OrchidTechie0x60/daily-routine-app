@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated light mode colors for better contrast and warmth */
+  --background: oklch(0.99 0.005 85);
+  --foreground: oklch(0.2 0.01 280);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.01 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.01 280);
+  --primary: oklch(0.45 0.15 250);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 85);
+  --secondary-foreground: oklch(0.25 0.01 280);
+  --muted: oklch(0.94 0.01 85);
+  --muted-foreground: oklch(0.5 0.02 280);
+  --accent: oklch(0.6 0.18 200);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.5 0.2 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.88 0.01 85);
+  --input: oklch(0.88 0.01 85);
+  --ring: oklch(0.5 0.15 250);
+  --chart-1: oklch(0.45 0.15 250);
+  --chart-2: oklch(0.5 0.18 200);
+  --chart-3: oklch(0.6 0.15 150);
+  --chart-4: oklch(0.7 0.12 100);
+  --chart-5: oklch(0.8 0.08 50);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.99 0.005 85);
+  --sidebar-foreground: oklch(0.2 0.01 280);
+  --sidebar-primary: oklch(0.45 0.15 250);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.96 0.01 85);
+  --sidebar-accent-foreground: oklch(0.25 0.01 280);
+  --sidebar-border: oklch(0.88 0.01 85);
+  --sidebar-ring: oklch(0.5 0.15 250);
+}
+
+.dark {
+  /* Enhanced dark mode with richer colors and better contrast */
+  --background: oklch(0.12 0.015 280);
+  --foreground: oklch(0.95 0.01 85);
+  --card: oklch(0.15 0.015 280);
+  --card-foreground: oklch(0.95 0.01 85);
+  --popover: oklch(0.15 0.015 280);
+  --popover-foreground: oklch(0.95 0.01 85);
+  --primary: oklch(0.65 0.2 250);
+  --primary-foreground: oklch(0.12 0.015 280);
+  --secondary: oklch(0.22 0.02 280);
+  --secondary-foreground: oklch(0.95 0.01 85);
+  --muted: oklch(0.22 0.02 280);
+  --muted-foreground: oklch(0.65 0.01 280);
+  --accent: oklch(0.7 0.22 200);
+  --accent-foreground: oklch(0.12 0.015 280);
+  --destructive: oklch(0.55 0.22 27);
+  --destructive-foreground: oklch(0.95 0.01 85);
+  --border: oklch(0.28 0.02 280);
+  --input: oklch(0.28 0.02 280);
+  --ring: oklch(0.55 0.2 250);
+  --chart-1: oklch(0.7 0.22 200);
+  --chart-2: oklch(0.65 0.2 250);
+  --chart-3: oklch(0.6 0.18 150);
+  --chart-4: oklch(0.5 0.15 100);
+  --chart-5: oklch(0.4 0.12 50);
+  --sidebar: oklch(0.15 0.015 280);
+  --sidebar-foreground: oklch(0.95 0.01 85);
+  --sidebar-primary: oklch(0.7 0.22 200);
+  --sidebar-primary-foreground: oklch(0.12 0.015 280);
+  --sidebar-accent: oklch(0.22 0.02 280);
+  --sidebar-accent-foreground: oklch(0.95 0.01 85);
+  --sidebar-border: oklch(0.28 0.02 280);
+  --sidebar-ring: oklch(0.55 0.2 250);
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    /* Android-native touch improvements */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Android-specific optimizations */
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Safe area insets for Android notches and navigation bars */
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Improve button and interactive element touch feedback */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth scrolling for Android */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent text selection on long press for better native feel */
+  input,
+  textarea,
+  select {
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+
+  /* Remove focus outline on touch devices, keep for keyboard navigation */
+  @media (hover: none) and (pointer: coarse) {
+    *:focus {
+      outline: none;
+    }
+  }
+}
+
+/* Android splash screen styles */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .select-none {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
