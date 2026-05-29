@@ -70,6 +70,8 @@ export default function HomePage() {
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null)
   const [defaultSectionTime, setDefaultSectionTime] = useState("")
   const [mounted, setMounted] = useState(false)
+  // Tick every minute so isActivityNow() stays accurate as the clock progresses
+  const [tick, setTick] = useState(0)
   const notificationMapRef = useRef<Map<string, number[]>>(new Map())
   const { theme, toggleTheme, mounted: themeMounted } = useTheme()
 
@@ -87,7 +89,11 @@ export default function HomePage() {
       checkPendingNotifications().catch(console.error)
     }
 
-    return () => { cancelAllNotifications(notificationMapRef.current) }
+    const tickId = setInterval(() => setTick((t) => t + 1), 60_000)
+    return () => {
+      cancelAllNotifications(notificationMapRef.current)
+      clearInterval(tickId)
+    }
   }, [loadActivities])
 
   useEffect(() => {
@@ -121,7 +127,7 @@ export default function HomePage() {
       })[0]
 
     return next?.id ?? null
-  }, [activities])
+  }, [activities, tick])
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
   const handlePermissionGranted = () => {

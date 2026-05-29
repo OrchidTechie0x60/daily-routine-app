@@ -149,7 +149,7 @@ async function showServiceWorkerNotification(title: string, options?: Notificati
       icon: "/icon-192x192.png",
       badge: "/icon-192x192.png",
       requireInteraction: true,
-      vibrate: [200, 100, 200],
+      vibrate: [200, 100, 200] as unknown as undefined,
       silent: false,
       ...options,
     })
@@ -166,15 +166,28 @@ async function showServiceWorkerNotification(title: string, options?: Notificati
  * On web: uses window.setTimeout + Service Worker (requires tab to be open).
  * Returns numeric IDs (Capacitor IDs or timeout IDs) for later cancellation.
  */
+// Inline end-time formatter so notifications.ts stays self-contained
+function endTimeLabel(startTime: string, durationMins: number): string {
+  const [h, m] = startTime.split(":").map(Number)
+  const total = h * 60 + m + durationMins
+  const eh = Math.floor(total / 60) % 24
+  const em = total % 60
+  const period = eh >= 12 ? "PM" : "AM"
+  return `${eh % 12 || 12}:${String(em).padStart(2, "0")} ${period}`
+}
+
 export async function scheduleActivityNotifications(activity: Activity): Promise<number[]> {
   const now = new Date()
-  let targetStart = createDateFromTime(activity.startTime)
+  const targetStart = createDateFromTime(activity.startTime)
 
-  // If start time has already passed today, schedule for tomorrow
-  if (targetStart <= now) {
-    targetStart = new Date(targetStart)
-    targetStart.setDate(targetStart.getDate() + 1)
-  }
+  // Start time already passed today — skip entirely (fire-once behaviour).
+  // On the next app open the following day it will be scheduled fresh.
+  if (targetStart <= now) return []
+
+  // Notification body — include end time when duration is set
+  const startBody = activity.duration
+    ? `${activity.title} · until ${endTimeLabel(activity.startTime, activity.duration)}`
+    : `Time for: ${activity.title}`
 
   if (isNative()) {
     try {
@@ -185,7 +198,7 @@ export async function scheduleActivityNotifications(activity: Activity): Promise
         notifications.push({
           id: toNotifId(`${activity.id}-start`),
           title: activity.title,
-          body: `Time for: ${activity.title}`,
+          body: startBody,
           schedule: { at: targetStart, allowWhileIdle: true },
           channelId: "routine-alerts",
           smallIcon: "ic_stat_notify",
@@ -226,14 +239,14 @@ export async function scheduleActivityNotifications(activity: Activity): Promise
       id: `${activity.id}-start`,
       activityId: activity.id,
       title: activity.title,
-      body: `Time for: ${activity.title}`,
+      body: startBody,
       scheduledTime: targetStart.getTime(),
       tag: `activity-${activity.id}-start`,
     })
     timeouts.push(
       window.setTimeout(async () => {
         await showServiceWorkerNotification(activity.title, {
-          body: `Time for: ${activity.title}`,
+          body: startBody,
           tag: `activity-${activity.id}-start`,
         })
         await deleteScheduledNotification(`${activity.id}-start`)
