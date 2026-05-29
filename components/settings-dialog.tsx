@@ -3,10 +3,17 @@
 import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Bell, BellOff, Trash2, Info } from "lucide-react"
+import { Bell, BellOff, Trash2, Info, BatteryWarning } from "lucide-react"
 import { getNotificationPermission, requestNotificationPermission } from "@/lib/notifications"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+
+function isAndroidNative(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    !!(window as any).Capacitor?.isNativePlatform?.()
+  )
+}
 
 interface SettingsDialogProps {
   open: boolean
@@ -17,6 +24,7 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange, onClearSchedule, activityCount }: SettingsDialogProps) {
   const [notificationStatus, setNotificationStatus] = useState(getNotificationPermission())
+  const onNative = isAndroidNative()
 
   const handleRequestNotifications = async () => {
     const result = await requestNotificationPermission()
@@ -62,7 +70,7 @@ export function SettingsDialog({ open, onOpenChange, onClearSchedule, activityCo
                     {notificationStatus === "granted"
                       ? "You'll receive timely reminders"
                       : notificationStatus === "denied"
-                        ? "Enable in browser settings"
+                        ? "Enable in device Settings → Apps → Daily Routine"
                         : "Enable to get activity reminders"}
                   </p>
                 </div>
@@ -75,16 +83,29 @@ export function SettingsDialog({ open, onOpenChange, onClearSchedule, activityCo
               )}
             </div>
 
+            {/* Battery optimisation warning — Android only, shown when notifications are on */}
+            {onNative && notificationStatus === "granted" && (
+              <Alert className="border-amber-500/40 bg-amber-500/10">
+                <BatteryWarning className="size-4 text-amber-500" />
+                <AlertDescription className="text-xs">
+                  <span className="font-semibold text-amber-500">Action needed for reliable alarms:</span>
+                  {" "}Go to{" "}
+                  <span className="font-medium">
+                    Settings → Apps → Daily Routine → Battery → Unrestricted
+                  </span>
+                  {" "}to prevent Android from killing notifications in the background.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Alert>
               <Info className="size-4" />
               <AlertDescription className="text-xs">
-                On Android, notifications fire reliably even when the app is closed. On web/PWA, keep the tab open for
-                best results.
+                Notifications stay visible in your notification shade until you dismiss them.
+                Each activity fires once at its scheduled time.
               </AlertDescription>
             </Alert>
           </div>
-
-          <Separator />
 
           <Separator />
 
@@ -119,7 +140,7 @@ export function SettingsDialog({ open, onOpenChange, onClearSchedule, activityCo
             <Alert>
               <Info className="size-4" />
               <AlertDescription className="text-xs">
-                All data is stored locally on your device using IndexedDB. No data is sent to any server.
+                All data is stored locally on your device. No data is sent to any server.
               </AlertDescription>
             </Alert>
           </div>

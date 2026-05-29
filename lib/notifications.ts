@@ -178,11 +178,19 @@ function endTimeLabel(startTime: string, durationMins: number): string {
 
 export async function scheduleActivityNotifications(activity: Activity): Promise<number[]> {
   const now = new Date()
-  const targetStart = createDateFromTime(activity.startTime)
+  let targetStart = createDateFromTime(activity.startTime)
 
-  // Start time already passed today — skip entirely (fire-once behaviour).
-  // On the next app open the following day it will be scheduled fresh.
-  if (targetStart <= now) return []
+  if (targetStart <= now) {
+    // Grace window: if the time passed less than 2 minutes ago (e.g. reschedule ran
+    // milliseconds after the alarm time, or app opened right at the notification time)
+    // fire immediately instead of silently dropping it.
+    const msAgo = now.getTime() - targetStart.getTime()
+    if (msAgo <= 2 * 60 * 1000) {
+      targetStart = new Date(now.getTime() + 3_000) // fire in 3 s
+    } else {
+      return [] // too far in the past — skip for today
+    }
+  }
 
   // Notification body — include end time when duration is set
   const startBody = activity.duration
@@ -202,6 +210,9 @@ export async function scheduleActivityNotifications(activity: Activity): Promise
           schedule: { at: targetStart, allowWhileIdle: true },
           channelId: "routine-alerts",
           smallIcon: "ic_stat_notify",
+          // Keep notification visible in the shade until user swipes it away
+          autoCancel: false,
+          ongoing: false,
         })
       }
 
@@ -216,6 +227,8 @@ export async function scheduleActivityNotifications(activity: Activity): Promise
             schedule: { at: preAlert, allowWhileIdle: true },
             channelId: "routine-alerts",
             smallIcon: "ic_stat_notify",
+            autoCancel: false,
+            ongoing: false,
           })
         }
       }

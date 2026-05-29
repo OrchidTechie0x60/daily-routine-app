@@ -40,11 +40,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Needed to ask Android to exempt the app from battery optimisation so
+         alarms fire on time even on aggressive OEM builds (Samsung, Xiaomi…) -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- Exact alarms: USE_EXACT_ALARM (Android 13+, no user prompt required) -->
-    <!-- and SCHEDULE_EXACT_ALARM as fallback for Android 12 -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <!-- POST_NOTIFICATIONS is handled by the @capacitor/local-notifications plugin's
+         own merged manifest — no manual declaration needed here. -->
+
+    <!-- SCHEDULE_EXACT_ALARM: needed on Android 12/12L (API 31-32) for precise alarm
+         delivery. maxSdkVersion="32" keeps it out of the manifest on API 33+ where the
+         plugin handles scheduling differently. On Android 10/11 (API 29-30) the system
+         ignores this unknown permission gracefully — it does not prevent installation.
+         USE_EXACT_ALARM has been removed: it is restricted to system alarm-clock apps
+         and caused installation failures on strict OEM builds running Android 10/11. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
         android:maxSdkVersion="32" />
 </manifest>
