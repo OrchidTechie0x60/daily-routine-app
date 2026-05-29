@@ -14,13 +14,14 @@ import { cn } from "@/lib/utils"
 
 interface ActivityItemProps {
   activity: Activity
+  isNext?: boolean // true when this is the next upcoming activity (none happening now)
   onEdit: (activity: Activity) => void
   onDelete: (id: string) => void
 }
 
 const ACTION_WIDTH = 128 // px — two 64 px action buttons
 
-export function ActivityItem({ activity, onEdit, onDelete }: ActivityItemProps) {
+export function ActivityItem({ activity, isNext = false, onEdit, onDelete }: ActivityItemProps) {
   const isNow = isActivityNow(activity)
   const isUpcoming = isActivityUpcoming(activity)
 
@@ -92,9 +93,11 @@ export function ActivityItem({ activity, onEdit, onDelete }: ActivityItemProps) 
         className={cn(
           "relative flex items-start gap-3 rounded-lg border bg-card p-4",
           "transition-transform duration-200 ease-out",
-          // 2. "Happening now" — left accent stripe
+          // "Happening now" — bold left accent stripe
           isNow && "border-accent/40 border-l-[3px] border-l-accent",
-          isUpcoming && !isNow && "border-muted-foreground/25",
+          // "Next up" — subtler left stripe in muted foreground
+          isNext && !isNow && "border-muted-foreground/40 border-l-[3px] border-l-muted-foreground/60",
+          isUpcoming && !isNow && !isNext && "border-muted-foreground/25",
         )}
         style={{ transform: `translateX(${revealed ? -ACTION_WIDTH : 0}px)` }}
         onTouchStart={onTouchStart}
@@ -109,10 +112,16 @@ export function ActivityItem({ activity, onEdit, onDelete }: ActivityItemProps) 
         {/* Timeline dot */}
         <div className="flex flex-col items-center gap-1 pt-1 shrink-0">
           {isNow ? (
-            // 2. Pulsing dot when active
+            // Pulsing accent dot — currently happening
             <div className="relative size-3">
               <div className="absolute inset-0 animate-ping rounded-full bg-accent opacity-60" />
               <div className="relative size-3 rounded-full bg-accent" />
+            </div>
+          ) : isNext ? (
+            // Pulsing muted dot — next up
+            <div className="relative size-3">
+              <div className="absolute inset-0 animate-ping rounded-full bg-muted-foreground opacity-50" />
+              <div className="relative size-3 rounded-full bg-muted-foreground" />
             </div>
           ) : (
             <div

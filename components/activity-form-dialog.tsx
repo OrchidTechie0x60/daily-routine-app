@@ -23,9 +23,10 @@ interface ActivityFormDialogProps {
   onOpenChange: (open: boolean) => void
   activity: Activity | null
   onSave: (data: Omit<Activity, "id" | "createdAt" | "updatedAt"> | { id: string; updates: Partial<Activity> }) => void
+  defaultStartTime?: string // pre-fill when adding from a section button
 }
 
-export function ActivityFormDialog({ open, onOpenChange, activity, onSave }: ActivityFormDialogProps) {
+export function ActivityFormDialog({ open, onOpenChange, activity, onSave, defaultStartTime }: ActivityFormDialogProps) {
   const [title, setTitle] = useState("")
   const [startTime, setStartTime] = useState("")
   const [duration, setDuration] = useState("")
@@ -43,13 +44,13 @@ export function ActivityFormDialog({ open, onOpenChange, activity, onSave }: Act
       setNotifyBeforeMinutes(activity.notifyBefore?.toString() || "10")
     } else {
       setTitle("")
-      setStartTime(getCurrentTime())
+      setStartTime(defaultStartTime || getCurrentTime())
       setDuration("")
       setNotifyAtStart(true)
       setNotifyBefore(false)
       setNotifyBeforeMinutes("10")
     }
-  }, [activity, open])
+  }, [activity, open, defaultStartTime])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
